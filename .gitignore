@@ -1,0 +1,27 @@
+# Archivos compilados
+*.o
+*.pyc
+*.class
+
+# Directorios
+node_modules/
+__pycache__/
+dist/
+build/
+
+# Archivos de entorno
+.env
+.env.local
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
