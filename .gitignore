@@ -25,3 +25,8 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# Entornos virtuales de Python
+.venv/
+venv/
+env/
