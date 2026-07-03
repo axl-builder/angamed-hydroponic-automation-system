@@ -24,6 +24,11 @@ if [ -z "$SESSION_SECRET_KEY" ]; then
     echo "SESSION_SECRET_KEY=$SESSION_SECRET_KEY" >> .env
 fi
 
+if [ -z "$NODERED_CREDENTIAL_SECRET" ]; then
+    NODERED_CREDENTIAL_SECRET=$(openssl rand -hex 32)
+    echo "NODERED_CREDENTIAL_SECRET=$NODERED_CREDENTIAL_SECRET" >> .env
+fi
+
 # ==============================================================================
 # 2. CONTROL DE IDEMPOTENCIA (Limpieza opcional de entornos previos)
 # ==============================================================================
@@ -92,7 +97,11 @@ mkdir -p data/influxdb/data \
          data/mosquitto/config \
          data/mosquitto/data \
          data/mosquitto/log \
-         data/node-red
+         data/node-red \
+         data/grafana
+
+cp nodered/settings.js data/node-red/settings.js
+sudo chown 1000:1000 data/node-red/settings.js
 
 # Configuración Base de Mosquitto (si no existe, evita carpetas vacías erróneas)
 if [ ! -f data/mosquitto/config/mosquitto.conf ]; then
@@ -116,6 +125,9 @@ sudo chown -R 1883:1883 data/mosquitto/config/mosquitto.conf 2>/dev/null || true
 
 # Node-RED (UID/GID 1000)
 sudo chown -R 1000:1000 data/node-red
+
+# Grafana (UID/GID 472)
+sudo chown -R 472:472 data/grafana
 
 echo "======================================================================"
 echo " Sistema centralizado en './data/'. Inicia con: docker compose up -d"

@@ -57,13 +57,26 @@ services:
     restart: unless-stopped
     ports:
       - "1880:1880"
+    environment:
+      - NODERED_CREDENTIAL_SECRET=${NODERED_CREDENTIAL_SECRET}
     volumes:
       - ./data/node-red:/data
     networks:
       - red_personalizada
-
-
-
+    
+  grafana:
+    image: grafana/grafana:13.0.3
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./data/grafana:/var/lib/grafana
+    networks:
+      - red_personalizada
 
 secrets:
   admin-token:
