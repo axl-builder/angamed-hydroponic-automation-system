@@ -81,13 +81,38 @@ docker compose up -d
 
 ### 5. Configuración de Node-RED
 
-Una vez que los servicios están levantados, puede ser necesario instalar el plugin de InfluxDB para Node-RED. Para esto hay que ir al botón de opciones arriba a la derecha → **Manage palette** y buscar el plugin que se ve en la imagen:
+5. Configuración de Node-RED
+Una vez que los servicios estén levantados, es necesario instalar el nodo de integración con InfluxDB dentro de Node-RED. Para hacerlo, sigue estos pasos desde la interfaz web de Node-RED:
 
-![Plugin de InfluxDB en Node-RED](assets/nodered-plugin-influxdb.JPG)
+Haz clic en el menú principal (el ícono de las tres líneas horizontales en la esquina superior derecha).
 
-Una vez instalado, hay que ir a la configuración del nodo de InfluxDB en el flow, editar la conexión con el servidor, y cargar el token generado en `INFLUX_ADMIN_TOKEN`:
+Selecciona la opción Manage palette.
 
-![Configuración del token en Node-RED](assets/nodered-token-influxdb.JPG)
+En la ventana de configuración que se abre, dirígete a la pestaña Install.
+
+En la barra de búsqueda, escribe influxdb.
+
+Busca en la lista de resultados el paquete llamado exactamente node-red-contrib-influxdb3 (Node-RED nodes for InfluxDB v3 integration).
+
+Haz clic en el botón Install de ese paquete y espera a que finalice el proceso.
+
+Una vez instalado el plugin, debes configurar la conexión del nodo de InfluxDB en tu flujo para que pueda comunicarse con la base de datos. Sigue estos pasos:
+
+Haz doble clic sobre el nodo de InfluxDB en tu flujo para abrir el panel de propiedades lateral.
+
+Junto al campo del servidor, haz clic en el ícono de edición (el lápiz) para añadir o modificar la conexión.
+
+En la configuración del servidor, completa los siguientes campos clave:
+
+Version: Selecciona 2.0 (o la versión requerida por el nodo).
+
+URL: Ingresa http://influxdb3-core:8181 (este es el hostname y puerto interno del contenedor de InfluxDB en la red de Docker).
+
+Token: Pega aquí el valor exacto de la variable INFLUX_ADMIN_TOKEN que se generó automáticamente en tu archivo .env.
+
+Haz clic en el botón Update para guardar la configuración del servidor.
+
+Finalmente, presiona el botón rojo Deploy en la esquina superior derecha de Node-RED para aplicar y activar los cambios.
 
 ---
 
