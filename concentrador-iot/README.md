@@ -12,11 +12,9 @@ Stack de concentrador local para el sistema de automatización del invernadero h
 
 ## Arquitectura (en producción)
 
-```
-Nodos ESP32  ──MQTT──►  Mosquitto  ──►  Node-RED  ──►  InfluxDB 3 Core  ──►  Grafana
-                            │                                                    │
-                            └──────────────── InfluxDB Explorer ◄───────────────┘
-```
+
+![Dashboard de Grafana](assets/screenshot.png)
+
 
 Todos los servicios corren como contenedores Docker en un único host (Raspberry Pi 4 en producción, cualquier máquina Linux para desarrollo).
 
