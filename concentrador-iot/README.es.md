@@ -6,12 +6,11 @@ Stack de concentrador local para el sistema de automatización del invernadero h
 
 ## Demo
 
-<!-- Reemplazá este comentario con un video o GIF mostrando el dashboard en funcionamiento -->
-> 📹 _Video demo aquí_
+<video src="assets/demo.mp4" width="100%" autoplay loop muted>
 
 ---
 
-## Arquitectura
+## Arquitectura (en producción)
 
 ```
 Nodos ESP32  ──MQTT──►  Mosquitto  ──►  Node-RED  ──►  InfluxDB 3 Core  ──►  Grafana
