@@ -1,13 +1,48 @@
 #!/bin/bash
 
 # ==============================================================================
-# 1. CARGA, VALIDACIÓN Y GENERACIÓN DINÁMICA DE CREDENCIALES (.env)
+# 1. CONTROL DE IDEMPOTENCIA (Limpieza opcional de entornos previos)
+# ==============================================================================
+EXISTEN_CARPETAS=false
+
+# Verificamos si alguna de las carpetas principales o el .env ya está en el disco
+for dir in data secrets config .env; do
+    if [ -e "$dir" ]; then
+        EXISTEN_CARPETAS=true
+        break
+    fi
+done
+
+if [ "$EXISTEN_CARPETAS" = true ]; then
+    echo "⚠️ Se detectaron estructuras o configuraciones previas (data/, secrets/, config/ o .env)."
+    read -p "¿Deseas eliminarlas para realizar una inicialización completamente limpia? [s/N]: " respuesta
+    
+    case "$respuesta" in
+        [sS]|[sS][iI])
+            echo "Eliminando directorios existentes y reseteando credenciales con privilegios elevados..."
+            # Es necesario usar sudo por los chown previos de los UIDs de cada contenedor
+            # ACÁ SE AGREGA EL BORRADO DEL .ENV JUNTO CON LAS CARPETAS
+            sudo rm -rf data secrets config .env
+            echo "✅ Limpieza completa. Procediendo con la creación desde cero."
+            ;;
+        *)
+            echo "➡️ Manteniendo las carpetas, permisos y el .env existentes. Continuando..."
+            ;;
+    esac
+fi
+
+# ==============================================================================
+# 2. CARGA, VALIDACIÓN Y GENERACIÓN DINÁMICA DE CREDENCIALES (.env)
 # ==============================================================================
 # Asegurar la existencia del archivo .env para evitar fallos de lectura
 touch .env
 
-# Cargar variables de entorno actuales omitiendo comentarios
-export $(echo $(grep -v '^#' .env | xargs)) 2>/dev/null
+# NUEVO MÉTODO ROBUSTO: Cargar variables de entorno usando source
+if [ -s .env ]; then
+    set -a
+    source .env
+    set +a
+fi
 
 # Generar INFLUX_ADMIN_TOKEN de manera automática si no está definido
 if [ -z "$INFLUX_ADMIN_TOKEN" ]; then
@@ -27,36 +62,6 @@ fi
 if [ -z "$NODERED_CREDENTIAL_SECRET" ]; then
     NODERED_CREDENTIAL_SECRET=$(openssl rand -hex 32)
     echo "NODERED_CREDENTIAL_SECRET=$NODERED_CREDENTIAL_SECRET" >> .env
-fi
-
-# ==============================================================================
-# 2. CONTROL DE IDEMPOTENCIA (Limpieza opcional de entornos previos)
-# ==============================================================================
-EXISTEN_CARPETAS=false
-
-# Verificamos si alguna de las carpetas principales ya está en el disco
-for dir in data secrets config; do
-    if [ -d "$dir" ]; then
-        EXISTEN_CARPETAS=true
-        break
-    fi
-done
-
-if [ "$EXISTEN_CARPETAS" = true ]; then
-    echo "⚠️ Se detectaron estructuras previas (data/, secrets/ o config/)."
-    read -p "¿Deseas eliminarlas para realizar una inicialización completamente limpia? [s/N]: " respuesta
-    
-    case "$respuesta" in
-        [sS]|[sS][iI])
-            echo "Eliminando directorios existentes con privilegios elevados..."
-            # Es necesario usar sudo por los chown previos de los UIDs de cada contenedor
-            sudo rm -rf data secrets config
-            echo "✅ Carpetas eliminadas correctamente. Procediendo con la creación limpia."
-            ;;
-        *)
-            echo "➡️ Manteniendo las carpetas y permisos existentes. Continuando..."
-            ;;
-    esac
 fi
 
 # ==============================================================================
