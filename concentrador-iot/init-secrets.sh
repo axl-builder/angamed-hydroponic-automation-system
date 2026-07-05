@@ -72,9 +72,13 @@ cat << EOF > secrets/influxdb-key.json
   "name": "_admin"
 }
 EOF
-sudo chown -R 1500:1500 secrets
+
+# Primero aplicamos los permisos restrictivos (mientras eres dueño de los archivos)
 chmod 700 secrets
 chmod 600 secrets/influxdb-key.json
+
+# Al FINAL le entregamos la propiedad al UID 1500 de InfluxDB con sudo
+sudo chown -R 1500:1500 secrets
 
 # InfluxDB Explorer Config (Recibe exactamente el mismo token asignado arriba)
 mkdir -p config
