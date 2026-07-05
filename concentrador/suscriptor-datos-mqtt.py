@@ -54,4 +54,3 @@ client.connect(broker, port, 60)
 
 # Dejar la conexion en un loop 
 client.loop_forever()
-
