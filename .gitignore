@@ -1,48 +1,39 @@
-# Archivos compilados
-*.o
-*.pyc
-*.class
-
-# Directorios
-node_modules/
-__pycache__/
-dist/
-build/
-
-# Archivos de entorno
+# ==============================================================================
+# Entorno y Configuración Local
+# ==============================================================================
 .env
 .env.local
 
-# Logs
-*.log
-logs/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# IDEs
-.vscode/
-.idea/
-*.swp
-
-# Entornos virtuales de Python
-.venv/
-venv/
-env/
-
+# ==============================================================================
+# Secretos y Credenciales (¡Crítico!)
+# ==============================================================================
 secrets/
 config/config.json
 
-# ... Tus configuraciones actuales ...
-
-# Ignorar la persistencia y configuraciones del subproyecto InfluxDB
-influxdb/data/
-influxdb/mosquitto/data/
-influxdb/mosquitto/log/
-influxdb/node-red-data/
-influxdb/secrets/
-influxdb/.env
-
+# ==============================================================================
+# Persistencia de Datos y Volúmenes de Docker
+# ==============================================================================
 data/
-**/data/
+
+# ==============================================================================
+# Logs del Sistema
+# ==============================================================================
+*.log
+logs/
+
+# ==============================================================================
+# Archivos de Entorno de Desarrollo (Python / Node-RED)
+# ==============================================================================
+__pycache__/
+.venv/
+venv/
+node_modules/
+
+# ==============================================================================
+# Basura del Sistema Operativo e IDEs
+# ==============================================================================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
