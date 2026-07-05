@@ -179,11 +179,5 @@ Para rotar el token de InfluxDB, borrar el `.env` y volver a ejecutar `./init-se
 
 ## Solución de problemas
 
-**InfluxDB Core no arranca — permission denied**
-Ejecutar `docker run --rm influxdb:3-core id` para obtener el UID del contenedor, luego `sudo chown -R <uid>:<uid> data/influxdb/data`.
-
 **Las credenciales de Node-RED se pierden tras reiniciar**
 Significa que `NODERED_CREDENTIAL_SECRET` cambió entre ejecuciones. Conservar el archivo `.env` y no borrarlo entre reinicios. Si se pierden las credenciales, reingresar el token de InfluxDB en la UI de Node-RED en el nodo del servidor influxdb.
-
-**Los mensajes MQTT no llegan a Node-RED en WSL2**
-El servicio local de Mosquitto puede estar interceptando el tráfico en el puerto 1883. Detenerlo con `sudo systemctl stop mosquitto && sudo systemctl disable mosquitto`.
