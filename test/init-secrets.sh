@@ -100,6 +100,10 @@ mkdir -p data/influxdb/data \
          data/node-red \
          data/grafana
 
+#copiando config para nodered
+cp nodered/settings.js data/node-red/settings.js
+
+
 # Configuración Base de Mosquitto (si no existe, evita carpetas vacías erróneas)
 if [ ! -f data/mosquitto/config/mosquitto.conf ]; then
     cat << EOF > data/mosquitto/config/mosquitto.conf

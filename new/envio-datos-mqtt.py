@@ -2,10 +2,11 @@ import json
 import time
 import paho.mqtt.client as mqtt
 import random
+import os
 
 # Definir los parametros de conexion
 device_id = "tanque1"
-broker = "localhost"
+broker = os.environ.get("MQTT_BROKER", "localhost")
 port = 1883
 topic = "angamed/tanque1/datos"
 intervalo = 3  # Intervalo de publicacion en segundos

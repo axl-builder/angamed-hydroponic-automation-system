@@ -1,0 +1,156 @@
+[
+    {
+        "id": "4d630bbe141decde",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "a3c50888d4398661",
+        "type": "mqtt in",
+        "z": "4d630bbe141decde",
+        "name": "",
+        "topic": "angamed/tanque1/datos",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "3ead2fd5b1619bd8",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 250,
+        "y": 520,
+        "wires": [
+            [
+                "ecf1f1fb9902ad38",
+                "ac94ba741bc72ead"
+            ]
+        ]
+    },
+    {
+        "id": "ecf1f1fb9902ad38",
+        "type": "debug",
+        "z": "4d630bbe141decde",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 520,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "ac94ba741bc72ead",
+        "type": "json",
+        "z": "4d630bbe141decde",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 530,
+        "y": 520,
+        "wires": [
+            [
+                "69359b3689bd3fdf"
+            ]
+        ]
+    },
+    {
+        "id": "69359b3689bd3fdf",
+        "type": "function",
+        "z": "4d630bbe141decde",
+        "name": "function 1",
+        "func": "msg.payload=[\n    {\"ph\":msg.payload.ph, \"temp_agua\":msg.payload.temp_agua    \n    },\n    {\"device_id\":msg.payload.device_id}\n]\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 860,
+        "y": 520,
+        "wires": [
+            [
+                "ea37d63526f54867"
+            ]
+        ]
+    },
+    {
+        "id": "ea37d63526f54867",
+        "type": "influxdb out",
+        "z": "4d630bbe141decde",
+        "influxdb": "bcb71b2096c0d295",
+        "name": "",
+        "measurement": "valores_tanque1",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "organisation",
+        "bucket": "bucket",
+        "x": 1350,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "3ead2fd5b1619bd8",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "mosquitto",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "bcb71b2096c0d295",
+        "type": "influxdb",
+        "hostname": "influxdb3-core",
+        "port": "8181",
+        "protocol": "http",
+        "database": "database",
+        "name": "",
+        "usetls": false,
+        "tls": "",
+        "influxdbVersion": "2.0",
+        "url": "http://localhost:8086",
+        "timeout": 10,
+        "rejectUnauthorized": true
+    },
+    {
+        "id": "596a62fccf5b1982",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-influxdb": "0.7.0"
+        }
+    }
+]

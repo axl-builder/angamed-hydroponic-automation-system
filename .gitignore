@@ -30,3 +30,19 @@ Thumbs.db
 .venv/
 venv/
 env/
+
+secrets/
+config/config.json
+
+# ... Tus configuraciones actuales ...
+
+# Ignorar la persistencia y configuraciones del subproyecto InfluxDB
+influxdb/data/
+influxdb/mosquitto/data/
+influxdb/mosquitto/log/
+influxdb/node-red-data/
+influxdb/secrets/
+influxdb/.env
+
+data/
+**/data/
