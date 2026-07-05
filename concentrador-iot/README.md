@@ -203,7 +203,7 @@ Hay que conectar InfluxDB como data source usando la configuración de la imagen
 │   ├── envio-datos-mqtt.py       # Publisher MQTT — simula nodo sensor ESP32
 │   └── suscriptor-datos-mqtt.py  # Subscriber MQTT — para debugging
 └── grafana/
-    └── angamed-dashboard.json    # Export del dashboard de Grafana
+    └── angamed-dashboard.json    # Export del dashboard de Grafana (opcional)
 ```
 
 ---
