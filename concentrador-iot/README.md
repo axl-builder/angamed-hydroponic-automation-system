@@ -6,7 +6,7 @@ Stack de concentrador local para el sistema de automatización del invernadero h
 
 ## Demo
 
-![Video Demostrativo](assets/demo.mp4)
+![Video Demostrativo](assets/demo.gif)
 
 ---
 
