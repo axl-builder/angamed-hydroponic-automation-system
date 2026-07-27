@@ -10,6 +10,7 @@
 secrets/
 config/config.json
 concentrador-iot/config/
+src/secrets.h
 
 # ==============================================================================
 # Persistencia de Datos y Volúmenes de Docker
