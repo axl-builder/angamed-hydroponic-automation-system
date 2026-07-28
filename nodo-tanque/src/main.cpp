@@ -2,6 +2,7 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include "secrets.h"
+#include "sensores.h"
 
 // 1. La IP de mi PC en Windows, porque uso wsl (la que vimos en el ipconfig)
 const char* mqtt_server = "192.168.1.6";
@@ -47,6 +48,9 @@ void connectMQTT() {
 void setup() {
   Serial.begin(115200);
 
+  // Llamamos a la inicialización de nuestro módulo separado
+  inicializarSensores();
+  
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Connecting to WiFi ..");
@@ -88,14 +92,24 @@ void loop() {
   // Mantener la conexión viva (el latido)
   client.loop();
 
-  // Ejemplo: publicar algo cada 10 segundos sin usar delay() bloqueantes
+  // Ejemplo: publicar algo cada 10 segundos
   static unsigned long lastMsg = 0;
   unsigned long now = millis();
   if (now - lastMsg > 10000) {
     lastMsg = now;
-    // Acá iría la lectura real del sensor
-    String payload = "{\"nivel\": 100}";
+    
+    // Obtenemos los datos limpios desde el otro archivo
+    float ph_actual = leerPh();
+    float temp_actual = leerTemperatura();
+
+    // Armamos el JSON
+    String payload = "{";
+    payload += "\"device_id\":\"" + clientId + "\",";
+    payload += "\"ph\":" + String(ph_actual) + ",";
+    payload += "\"temp_agua\":" + String(temp_actual);
+    payload += "}";
+    
     client.publish(topicDatos.c_str(), payload.c_str()); 
-    Serial.println("Mensaje publicado en: " + topicDatos);
+    Serial.println("Publicado: " + payload);
   }
 }
