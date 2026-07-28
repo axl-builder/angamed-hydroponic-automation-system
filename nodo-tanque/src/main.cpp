@@ -45,17 +45,21 @@ void connectMQTT() {
 
 // 4. En setup(): inicializar Serial, conectar WiFi, configurar el servidor MQTT con setServer()
 void setup() {
-  Serial.begin(115200);
-  Serial.print("Conectando a ");
-  Serial.println(ssid);
-  WiFi.begin(ssid, password);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  Serial.print("Connecting to WiFi ..");
 
+
+  unsigned long inicio = millis();
   while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
+    if (millis() - inicio > 20000) {
+        Serial.print("WiFi timeout - no se pudo conectar");
+        break;
+    }
+    Serial.print('.');
+    delay(1000);
   }
-  Serial.println("\nWiFi conectado. IP: ");
-  Serial.println(WiFi.localIP());
+    Serial.println(WiFi.localIP());
   
   //  Armar el ID único una vez que el WiFi está encendido
   clientId = "NodoTanque-" + WiFi.macAddress();
