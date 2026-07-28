@@ -45,6 +45,8 @@ void connectMQTT() {
 
 // 4. En setup(): inicializar Serial, conectar WiFi, configurar el servidor MQTT con setServer()
 void setup() {
+  Serial.begin(115200);
+
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Connecting to WiFi ..");
@@ -53,8 +55,9 @@ void setup() {
   unsigned long inicio = millis();
   while (WiFi.status() != WL_CONNECTED) {
     if (millis() - inicio > 20000) {
-        Serial.print("WiFi timeout - no se pudo conectar");
-        break;
+        Serial.println("\nWiFi timeout - no se pudo conectar. Reiniciando placa...");
+        // 2. Reiniciar el chip para evitar que se cuelgue intentando conectar a MQTT sin red
+        ESP.restart();
     }
     Serial.print('.');
     delay(1000);
