@@ -94,7 +94,8 @@ void loop() {
   if (now - lastMsg > 10000) {
     lastMsg = now;
     // Acá iría la lectura real del sensor
-    client.publish(topicDatos.c_str(), "100"); 
+    String payload = "{\"nivel\": 100}";
+    client.publish(topicDatos.c_str(), payload.c_str()); 
     Serial.println("Mensaje publicado en: " + topicDatos);
   }
 }
