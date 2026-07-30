@@ -2,8 +2,6 @@
 
 Sistema IoT de monitoreo y control para un invernadero hidropónico comercial de 20×45 m. Automatiza la lectura de parámetros críticos del proceso (pH, temperatura del agua, y a futuro EC, nivel y caudal) mediante nodos periféricos ESP32, un concentrador local en Docker, y visualización en tiempo real.
 
-Proyecto desarrollado bajo la marca AXL Builder, en colaboración con el equipo de Angamed.
-
 ## Arquitectura general
 
 El sistema sigue una topología de tres capas, según el documento técnico de base del proyecto:
@@ -111,4 +109,4 @@ Según el plan de trabajo del documento técnico de base:
 
 ## Documentación técnica de base
 
-El diseño de arquitectura, selección de hardware, protocolos de calibración y matriz de riesgos fueron especificados en un documento técnico previo al desarrollo, elaborado en conjunto con el liderazgo del proyecto. Ese documento es la referencia de diseño contra la cual se evalúan las decisiones tomadas en cada rama; las diferencias entre lo especificado y lo implementado en esta etapa (por ejemplo, ausencia de TLS o de aisladores galvánicos I2C mientras se trabaja con sensores simulados) están anotadas en los pendientes de cada README de rama.
+El diseño de arquitectura, selección de hardware, protocolos de calibración y matriz de riesgos fueron especificados en un documento técnico previo al desarrollo, elaborado por Gabriel Medina en [`doc-tec-base.md`](doc-tec-base.md). Ese documento es la referencia de diseño contra la cual se evalúan las decisiones tomadas en cada rama; las diferencias entre lo especificado y lo implementado en esta etapa (por ejemplo, ausencia de TLS o de aisladores galvánicos I2C mientras se trabaja con sensores simulados) están anotadas en los pendientes de cada README de rama.
