@@ -1,22 +1,22 @@
-# Angamed Hydroponic Automation — Concentrador IoT
+# Concentrador IoT — Angamed Hydroponic Automation System
 
-Stack de concentrador local para el sistema de automatización del invernadero hidropónico Angamed. Recibe datos de sensores desde nodos ESP32 vía MQTT, los almacena en InfluxDB 3 Core y los visualiza en Grafana en tiempo real.
+Stack de concentrador local para el sistema de automatización hidropónica Angamed. Recibe telemetría de los nodos periféricos ESP32 vía MQTT, la persiste en InfluxDB 3 Core y la visualiza en tiempo real con Grafana.
 
----
+Este stack corresponde a la Capa 2 (Gateway Local) de la arquitectura de tres capas descrita en el documento técnico de base del proyecto.
+
+## Estado actual
+
+Fase 1 completa y en operación. Los cinco servicios corren en Docker Compose y reciben datos reales del nodo de tanque (`feature/nodo-tanque`) además del simulador incluido para desarrollo sin hardware.
 
 ## Demo
 
 ![Video demostrativo](assets/demo.gif)
 
----
-
-## Arquitectura (en producción)
+## Arquitectura
 
 ![Arquitectura del sistema](assets/screenshot.png)
 
-Todos los servicios corren como contenedores Docker en un único host (Raspberry Pi 4 en producción, cualquier máquina Linux para desarrollo).
-
----
+Todos los servicios corren como contenedores Docker en un único host — Raspberry Pi 4 en producción, cualquier máquina Linux (o WSL2) para desarrollo.
 
 ## Stack
 
@@ -28,15 +28,17 @@ Todos los servicios corren como contenedores Docker en un único host (Raspberry
 | Node-RED | `nodered/node-red:5.0-debian` | 1880 | Motor de flujos — bridge MQTT → InfluxDB |
 | Grafana | `grafana/grafana:13.0.3` | 3000 | Dashboard |
 
----
+### Flujo de datos
+
+```
+ESP32 (nodo-tanque) → Mosquitto → Node-RED → InfluxDB 3 Core → Grafana
+```
 
 ## Requisitos
 
 - Docker y Docker Compose
 - `openssl` disponible en el shell
 - Linux o macOS (WSL2 en Windows también funciona — ver nota más abajo)
-
----
 
 ## Configuración inicial
 
@@ -54,16 +56,16 @@ chmod +x init-secrets.sh
 bash init-secrets.sh
 ```
 
-Este script hace lo siguiente de forma automática:
+El script se encarga de:
 
-- Genera `INFLUX_ADMIN_TOKEN` y `SESSION_SECRET_KEY` en `.env` si no existen
-- Genera `NODERED_CREDENTIAL_SECRET` en `.env` si no existe
-- Crea `secrets/influxdb-key.json` con el token de admin para InfluxDB Core
-- Crea `config/config.json` con la conexión del Explorer preconfigurada
-- Crea todos los directorios de datos bajo `data/` con los permisos correctos por UID de contenedor
-- Copia `nodered/settings.js` y `nodered/flows.json` a `data/node-red/`
+- Generar `INFLUX_ADMIN_TOKEN` y `SESSION_SECRET_KEY` en `.env` si no existen.
+- Generar `NODERED_CREDENTIAL_SECRET` en `.env` si no existe.
+- Crear `secrets/influxdb-key.json` con el token de admin para InfluxDB Core.
+- Crear `config/config.json` con la conexión del Explorer preconfigurada.
+- Crear todos los directorios de datos bajo `data/` con los permisos correctos por UID de contenedor.
+- Copiar `nodered/settings.js` y `nodered/flows.json` a `data/node-red/`.
 
-> Si los directorios de datos ya existen, el script preguntará si querés borrarlos para una inicialización limpia.
+Si los directorios de datos ya existen, el script pregunta si querés borrarlos para una inicialización limpia.
 
 ### 3. Levantar el stack
 
@@ -81,40 +83,21 @@ docker compose up -d
 
 ### 5. Configuración de Node-RED
 
-Una vez que los servicios estén levantados, es necesario instalar el nodo de integración con InfluxDB dentro de Node-RED. Para hacerlo, sigue estos pasos desde la interfaz web de Node-RED:
+Una vez levantados los servicios, hace falta instalar el nodo de integración con InfluxDB dentro de Node-RED:
 
-- Haz clic en el menú principal (el ícono de las tres líneas horizontales en la esquina superior derecha).
+1. Abrí el menú principal (ícono de tres líneas horizontales, esquina superior derecha).
+2. Seleccioná **Manage palette** → pestaña **Install**.
+3. Buscá `influxdb` y instalá el paquete `node-red-contrib-influxdb3` (Node-RED nodes for InfluxDB v3 integration).
 
-- Selecciona la opción Manage palette.
+Con el plugin instalado, configurá la conexión del nodo InfluxDB en el flujo:
 
-- En la ventana de configuración que se abre, dirígete a la pestaña Install.
-
-- En la barra de búsqueda, escribe influxdb.
-
-- Busca en la lista de resultados el paquete llamado exactamente node-red-contrib-influxdb (Node-RED nodes for InfluxDB v3 integration).
-
-- Haz clic en el botón Install de ese paquete y espera a que finalice el proceso.
-
-
-Una vez instalado el plugin, debes configurar la conexión del nodo de InfluxDB en tu flujo para que pueda comunicarse con la base de datos. Sigue estos pasos:
-
-- Haz doble clic sobre el nodo de InfluxDB en tu flujo para abrir el panel de propiedades lateral.
-
-- Junto al campo del servidor, haz clic en el ícono de edición (el lápiz) para añadir o modificar la conexión.
-
-- En la configuración del servidor, completa los siguientes campos clave:
-
-- Version: Selecciona 2.0 (o la versión requerida por el nodo).
-
-- URL: Ingresa http://influxdb3-core:8181 (este es el hostname y puerto interno del contenedor de InfluxDB en la red de Docker).
-
-- Token: Pega aquí el valor exacto de la variable INFLUX_ADMIN_TOKEN que se generó automáticamente en tu archivo .env.
-
-- Haz clic en el botón Update para guardar la configuración del servidor.
-
-- Finalmente, presiona el botón rojo Deploy en la esquina superior derecha de Node-RED para aplicar y activar los cambios.
-
----
+1. Doble clic sobre el nodo InfluxDB para abrir el panel de propiedades.
+2. Junto al campo del servidor, hacé clic en el ícono de edición (lápiz) para añadir o modificar la conexión.
+3. Completá:
+   - **Version:** 2.0
+   - **URL:** `http://influxdb3-core:8181` (hostname y puerto interno del contenedor en la red de Docker)
+   - **Token:** el valor exacto de `INFLUX_ADMIN_TOKEN` generado en tu `.env`
+4. **Update** para guardar la configuración del servidor, y **Deploy** (botón rojo, esquina superior derecha) para aplicar los cambios.
 
 ## Nota para WSL2
 
@@ -124,75 +107,59 @@ Si corrés el stack en WSL2 con Docker Desktop, `localhost` dentro de WSL2 no re
 export MQTT_BROKER=$(grep nameserver /etc/resolv.conf | awk '{print $2}')
 ```
 
-Agregá esta línea a tu perfil de shell (`.bashrc` o `.zshrc`) para que persista entre sesiones. Los scripts de simulación leen `MQTT_BROKER` del entorno con `localhost` como fallback.
-
----
+Agregá esta línea a tu perfil de shell (`.bashrc` o `.zshrc`) para que persista entre sesiones. Los scripts de simulación leen `MQTT_BROKER` del entorno, con `localhost` como fallback.
 
 ## Simulación de datos de sensores
 
-Se incluye un script Python publisher para desarrollo y pruebas. Simula lecturas de sensores ESP32 y las publica al broker cada 3 segundos.
+Se incluye un script Python publisher para desarrollo y pruebas sin hardware real. Simula lecturas de un nodo tanque y las publica al broker cada 3 segundos.
 
 ```bash
 cd simulator
+uv sync
+source .venv/bin/activate
 python envio-datos-mqtt.py
 ```
 
-Puede ser necesario inicializar el entorno virtual antes de correrlo:
+El script lee `MQTT_BROKER` del entorno. En Linux o macOS el `localhost` por defecto funciona. En WSL2, configurá la variable como se indica arriba.
 
-```bash
-uv sync
-source .venv/bin/activate
-```
-
-Esto instala `paho-mqtt`, la biblioteca requerida por el script.
-
-El script lee `MQTT_BROKER` del entorno. En Linux o macOS el `localhost` por defecto funciona. En WSL2 configurá la variable como se indica arriba.
-
----
-
-## Estructura de topics MQTT
+## Estructura de tópicos MQTT
 
 ```
 angamed/<device_id>/datos
 ```
 
-Formato del payload (JSON):
+El `device_id` viaja en el tópico, no en el payload. Formato del payload (JSON):
 
 ```json
 {
-  "device_id": "tanque1",
-  "ph": 6.72,
-  "temp_agua": 22.5,
-  "timestamp": 1700000000
+  "ts": 1785429706,
+  "pH": 6.65,
+  "temp_agua": 26.88,
+  "rssi": -27
 }
 ```
 
----
+Este schema es compartido por el firmware del nodo (`feature/nodo-tanque`), el simulador Python y la función de transformación en Node-RED.
 
 ## Modelo de datos en InfluxDB
 
 | Elemento | Valor |
 |---|---|
 | Database | `mydb` |
-| Measurement | `lecturas_tanque1` |
-| Fields | `ph`, `temp_agua` |
-| Tags | `device_id` |
-
----
+| Measurement | `lecturas_tanque` |
+| Fields | `pH`, `temp_agua`, `rssi` |
+| Tags | `device_id` (extraído del tópico MQTT en la función de Node-RED) |
 
 ## Configuración de Grafana
 
-Hay que conectar InfluxDB como data source usando la configuración de la imagen:
+Conectar InfluxDB como data source usando la configuración de la imagen:
 
 ![Configuración data source en Grafana](assets/data-source-grafana.JPG)
-
-
----
 
 ## Estructura del repositorio
 
 ```
-.
+concentrador-iot/
 ├── docker-compose.yaml           # Orquestación de servicios
 ├── init-secrets.sh               # Script de inicialización (correr antes del primer docker compose up)
 ├── .env.example                  # Plantilla de variables de entorno
@@ -206,15 +173,17 @@ Hay que conectar InfluxDB como data source usando la configuración de la imagen
     └── angamed-dashboard.json    # Export del dashboard de Grafana (opcional)
 ```
 
----
-
 ## Credenciales y secretos
 
-Los secretos nunca se commitean al repositorio. El archivo `.env` está en el `.gitignore`. En la primera ejecución, `init-secrets.sh` genera todos los secretos necesarios de forma automática.
+Los secretos nunca se commitean al repositorio. El archivo `.env` está en `.gitignore`. En la primera ejecución, `init-secrets.sh` genera todos los secretos necesarios de forma automática.
 
-Para rotar el token de InfluxDB, borrar el `.env` y volver a ejecutar `./init-secrets.sh`. Esto elimina y recrea todos los secretos — será necesario reingresar el token en Node-RED y Grafana.
+Para rotar el token de InfluxDB: borrar el `.env` y volver a ejecutar `./init-secrets.sh`. Esto elimina y recrea todos los secretos — va a ser necesario reingresar el token en Node-RED y Grafana.
 
----
+## Pendientes
+
+- [ ] Persistencia de datos ante caída de internet ya cubierta por diseño (InfluxDB local + buffer), validar formalmente con una prueba de corte prolongado.
+- [ ] Automatizar la instalación del nodo `node-red-contrib-influxdb3` y su configuración de conexión, hoy manual, dentro de `init-secrets.sh` o un flow de arranque.
+- [ ] Sumar alertas (Telegram/correo) contempladas en el documento técnico de base, todavía no implementadas en esta fase.
 
 ## Solución de problemas
 
@@ -225,4 +194,8 @@ Significa que `NODERED_CREDENTIAL_SECRET` cambió entre ejecuciones. Conservar e
 Ejecutar `docker run --rm influxdb:3-core id` para obtener el UID del contenedor, luego `sudo chown -R <uid>:<uid> data/influxdb/data`.
 
 **Los mensajes MQTT no llegan a Node-RED en WSL2**
-El servicio local de Mosquitto puede estar interceptando el tráfico en el puerto 1883. Detenerlo con `sudo systemctl stop mosquitto && sudo systemctl disable mosquitto`.
+El servicio local de Mosquitto puede estar interceptando el tráfico en el puerto 1883. Detenerlo con `sudo systemctl stop mosquitto && sudo systemctl disable mosquitto`. También puede deberse a que la interfaz de red de WSL2 haya perdido la sesión entre contenedores tras un corte de conectividad en el host — si el problema persiste, `docker compose restart nodered` suele resolverlo.
+
+## Referencias
+
+Este stack implementa la Capa 2 de la arquitectura descrita en el documento técnico de base del proyecto Angamed. Las simplificaciones actuales respecto al documento (sin TLS, sin VLAN, sin EMQX Cloud ni Thingsboard) corresponden al alcance de desarrollo local de esta fase y se resuelven en fases posteriores del plan de trabajo.
