@@ -91,7 +91,7 @@ Una vez que los servicios estén levantados, es necesario instalar el nodo de in
 
 - En la barra de búsqueda, escribe influxdb.
 
-- Busca en la lista de resultados el paquete llamado exactamente node-red-contrib-influxdb3 (Node-RED nodes for InfluxDB v3 integration).
+- Busca en la lista de resultados el paquete llamado exactamente node-red-contrib-influxdb (Node-RED nodes for InfluxDB v3 integration).
 
 - Haz clic en el botón Install de ese paquete y espera a que finalice el proceso.
 
