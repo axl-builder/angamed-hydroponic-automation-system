@@ -57,7 +57,7 @@ void setup() {
 
   // dentro de setup(), después de Serial.begin(115200):
   delay(2000); // para que te dé tiempo a abrir el monitor serie
-  esp_err_t wdt_status = esp_task_wdt_init(30, true); // 30 segundos de timeout, true para resetear el chip si se cuelga
+  esp_err_t wdt_status = esp_task_wdt_init(30, false); // 30 segundos de timeout, true para resetear el chip si se cuelga
   Serial.print("Resultado esp_task_wdt_init: ");
   Serial.println(esp_err_to_name(wdt_status));
 
@@ -90,6 +90,23 @@ void setup() {
     configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
     Serial.println("Sincronizando hora con NTP (pool.ntp.org)...");
 
+    struct tm timeinfo;
+    unsigned long ntpInicio = millis();
+    bool ntpSincronizado = false;
+
+    while (!ntpSincronizado && (millis() - ntpInicio < 10000)) {
+      esp_task_wdt_reset();
+      ntpSincronizado = getLocalTime(&timeinfo, 1000);
+      if (!ntpSincronizado) {
+        Serial.print('.');
+      }
+    }
+
+    if (ntpSincronizado) {
+      Serial.println("\nHora NTP sincronizada correctamente.");
+    } else {
+      Serial.println("\nADVERTENCIA: no se pudo sincronizar NTP. Los primeros timestamps podrian ser incorrectos.");
+    }
   
   //  Armar el ID único una vez que el WiFi está encendido
   clientId = "NodoTanque-" + WiFi.macAddress();
