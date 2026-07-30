@@ -3,7 +3,7 @@
 
 void inicializarSensores() {
   // Inicializar el generador aleatorio (luego acá inicializarás las sondas reales)
-  randomSeed(analogRead(34));
+  randomSeed(analogRead(1));
 }
 
 float leerTemperatura() {

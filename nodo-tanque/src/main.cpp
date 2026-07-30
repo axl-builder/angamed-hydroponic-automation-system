@@ -3,15 +3,18 @@
 #include <PubSubClient.h>
 #include "secrets.h"
 #include "sensores.h"
+#include "esp_task_wdt.h"
+#include <ArduinoJson.h>
+#include <time.h>
 
-// 1. La IP de mi PC en Windows, porque uso wsl (la que vimos en el ipconfig)
-const char* mqtt_server = "192.168.1.6";
-
+// 1. CONFIGURACIÓN DEL SERVIDOR DE HORA (NTP)
+const char* ntpServer = "pool.ntp.org";
+const long  gmtOffset_sec = -10800; // -10800 segundos = UTC-3 (Hora de Argentina)
+const int   daylightOffset_sec = 0; // Sin horario de verano
 
 // 2. Declarar WiFiClient y PubSubClient globalmente. Con ClientId y topicDatos generar el topic dinámicamente y guardarlo en una variable global
 WiFiClient espClient;
 PubSubClient client(espClient);
-
 String clientId;
 String topicDatos;
 
@@ -19,6 +22,9 @@ String topicDatos;
 void connectMQTT() {
   // Mantener el bucle hasta que logre conectarse
   while (!client.connected()) {
+
+    esp_task_wdt_reset();
+    
     Serial.print("Intentando conexión MQTT...");
     
     
@@ -47,7 +53,15 @@ void connectMQTT() {
 // 4. En setup(): inicializar Serial, conectar WiFi, configurar el servidor MQTT con setServer()
 void setup() {
   Serial.begin(115200);
+  
 
+  // dentro de setup(), después de Serial.begin(115200):
+  delay(2000); // para que te dé tiempo a abrir el monitor serie
+  esp_err_t wdt_status = esp_task_wdt_init(30, true); // 30 segundos de timeout, true para resetear el chip si se cuelga
+  Serial.print("Resultado esp_task_wdt_init: ");
+  Serial.println(esp_err_to_name(wdt_status));
+
+  esp_task_wdt_add(NULL);
   // Llamamos a la inicialización de nuestro módulo separado
   inicializarSensores();
   
@@ -58,6 +72,9 @@ void setup() {
 
   unsigned long inicio = millis();
   while (WiFi.status() != WL_CONNECTED) {
+
+    esp_task_wdt_reset();
+    
     if (millis() - inicio > 20000) {
         Serial.println("\nWiFi timeout - no se pudo conectar. Reiniciando placa...");
         // 2. Reiniciar el chip para evitar que se cuelgue intentando conectar a MQTT sin red
@@ -67,6 +84,12 @@ void setup() {
     delay(1000);
   }
     Serial.println(WiFi.localIP());
+
+    // 2. SINCRONIZAMOS LA HORA CON INTERNET (NTP)
+    // Esto se hace una sola vez acá, y el ESP32 mantiene la hora solo
+    configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+    Serial.println("Sincronizando hora con NTP (pool.ntp.org)...");
+
   
   //  Armar el ID único una vez que el WiFi está encendido
   clientId = "NodoTanque-" + WiFi.macAddress();
@@ -78,12 +101,13 @@ void setup() {
   Serial.println(topicDatos);
   
   //  Configurar el servidor y el puerto por defecto de MQTT
-  client.setServer(mqtt_server, 1883);
+  client.setServer(MQTT_SERVER, 1883);
 }
 
 
 // 5. En loop(): llamar client.loop() y verificar si la conexión MQTT sigue activa — si no, reconectar
 void loop() {
+  esp_task_wdt_reset();
   // Si se cae la conexión, volver a levantarla
   if (!client.connected()) {
     connectMQTT();
@@ -102,13 +126,27 @@ void loop() {
     float ph_actual = leerPh();
     float temp_actual = leerTemperatura();
 
-    // Armamos el JSON
-    String payload = "{";
-    payload += "\"device_id\":\"" + clientId + "\",";
-    payload += "\"ph\":" + String(ph_actual) + ",";
-    payload += "\"temp_agua\":" + String(temp_actual);
-    payload += "}";
+    // 3. OBTENEMOS LA HORA REAL (Epoch / Unix Timestamp)
+    time_t ts_actual;
+    time(&ts_actual);
+
+    // 4. ARMAMOS EL JSON (El fin de la fragmentación de memoria)
+    // ArduinoJson v7 maneja el tamaño automáticamente sin que tengas que calcular bytes
+    // Armamos el JSON respetando el Schema de Producción
+    JsonDocument doc;
     
+    // doc["device_id"] = clientId; // LO SACAMOS, se envía en el Tópico
+    
+    doc["ts"]        = ts_actual;
+    doc["pH"]        = ph_actual;             // Corregido a mayúscula
+    doc["temp_agua"] = temp_actual;
+    doc["rssi"]      = WiFi.RSSI();           // Agregamos métrica de red
+    
+    // (Cuando tengas los otros sensores, agregarás "EC" y "nivel_pct")
+
+    String payload;
+    serializeJson(doc, payload);
+
     client.publish(topicDatos.c_str(), payload.c_str()); 
     Serial.println("Publicado: " + payload);
   }
